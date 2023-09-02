@@ -3,6 +3,7 @@
 
 #include<vector>
 #include<QString>
+#include<QDebug>
 #include<stdexcept>
 
 const int NUM_DAYS_IN_WEEK = 5;
@@ -14,21 +15,35 @@ class Student
 private:
     bool timetable[NUM_DAYS_IN_WEEK][NUM_TIME_IN_DAY] = {{false}};
     bool is_tutor = false;
+    bool respect_dayoff = true;
     QString name;
     QString student_id;
 
 public:
     Student();
     void mark_timetable(bool occupied, int week, int time_slot);
+    bool is_occupied(int week, int time_slot) const;
+
     bool get_is_tutor() const {
         return this -> is_tutor;
     }
-    bool is_occupied(int week, int time_slot) const;
+
     void set_name(const QString new_name) {
         this -> name = new_name;
     }
+
     void set_sid(const QString new_id) {
         this -> student_id = new_id;
+    }
+
+    void set_is_tutor(bool new_state) {
+        qDebug() << "Setting " << this->name << "'s tutor status to " << new_state;
+        this -> is_tutor = new_state;
+    }
+
+    void set_respect_dayoff(bool new_state) {
+        qDebug() << "Setting " << this->name << "'s respect dayoff to " << new_state;
+        this -> respect_dayoff = new_state;
     }
 };
 

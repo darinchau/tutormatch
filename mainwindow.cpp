@@ -80,8 +80,7 @@ void add_labels(QGridLayout* const& grid_layout) {
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    students{1, Student()},
-    current_student{0}
+    students{1, Student()}
 {
     ui->setupUi(this);
 
@@ -109,12 +108,19 @@ MainWindow::MainWindow(QWidget *parent):
         }
     }
 
-    this -> initialize_window_with_student(this -> get_current_student());
+    this -> refresh_ui();
 
     // Hook the text box and button events onto the current student
-    connect(ui -> name_textbox, &QTextEdit::textChanged, this, &MainWindow::update_name);
-    connect(ui -> sid_textbox, &QTextEdit::textChanged, this, &MainWindow::update_sid);
-    connect(ui -> calculate_button, &QPushButton::clicked, this, &MainWindow::calculate);
+    connect(this -> ui -> name_textbox, &QTextEdit::textChanged, this, &MainWindow::update_name);
+    connect(this -> ui -> sid_textbox, &QTextEdit::textChanged, this, &MainWindow::update_sid);
+    connect(this -> ui -> calculate_button, &QPushButton::clicked, this, &MainWindow::calculate);
+    connect(this -> ui -> tutor_checkbox, &QCheckBox::stateChanged, this, &MainWindow::update_tutor);
+    connect(this -> ui -> respect_dayoff_checkbox, &QCheckBox::stateChanged, this, &MainWindow::update_respect_dayoff);
+    connect(this -> ui -> next_student, &QPushButton::clicked, this, &MainWindow::update_next_student);
+    connect(this -> ui -> prev_student, &QPushButton::clicked, this, &MainWindow::update_prev_student);
+
+    // Precheck the dayoff thing
+    this -> ui -> respect_dayoff_checkbox -> setChecked(true);
 }
 
 MainWindow::~MainWindow() {
@@ -142,3 +148,30 @@ void MainWindow::calculate() {
     qDebug() << "Calculate is pressed";
 }
 
+void MainWindow::update_tutor(int state) {
+    this -> get_current_student() -> set_is_tutor(state != 0);
+}
+
+void MainWindow::update_respect_dayoff(int state) {
+    this -> get_current_student() -> set_respect_dayoff(state != 0);
+}
+
+void MainWindow::update_next_student() {
+    int current_idx = this -> get_current_student_idx();
+    if (current_idx == this -> get_num_students() - 1) {
+        Student new_student = Student();
+        this -> students.push_back(new_student);
+    }
+
+    this -> set_current_student_idx(current_idx + 1);
+    this -> refresh_ui();
+}
+
+void MainWindow::update_prev_student() {
+    int current_idx = this -> get_current_student_idx();
+    if (current_idx == 0) {
+        return;
+    }
+    this -> set_current_student_idx(current_idx - 1);
+    this -> refresh_ui();
+}
