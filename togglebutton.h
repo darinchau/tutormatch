@@ -7,13 +7,16 @@
 
 class ToggleButton : public QPushButton {
     Q_OBJECT
+public:
+    typedef std::function<void(ToggleButton* const, bool)> ClickEvent;
+
 private:
     bool toggled;
-    std::vector<std::function<void(bool)>> onclick_events;
+    std::vector<ClickEvent> onclick_events;
 
 public:
     explicit ToggleButton(const QString& label, QWidget* parent = nullptr);
-    void register_onclick(const std::function<void(bool)>& f);
+    void register_onclick(const ClickEvent& f);
 
 signals:
     void clicked();
@@ -28,7 +31,7 @@ private slots:
     void handleClicked() {
         this -> toggled = !(this -> toggled);
         for(const auto& f: this -> onclick_events) {
-            f(this -> toggled);
+            f(this, this -> toggled);
         }
     }
 };
