@@ -24,6 +24,12 @@ public:
         return this -> is_tutor;
     }
     bool is_occupied(int week, int time_slot) const;
+    void set_name(const QString new_name) {
+        this -> name = new_name;
+    }
+    void set_sid(const QString new_id) {
+        this -> student_id = new_id;
+    }
 };
 
 #endif // STUDENT_H

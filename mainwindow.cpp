@@ -85,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent):
 {
     ui->setupUi(this);
 
+    // Initialize the grid layout
     QGridLayout* const& grid_layout = this -> ui -> grid;
 
     grid_layout -> setSpacing(0);
@@ -107,10 +108,37 @@ MainWindow::MainWindow(QWidget *parent):
             grid_layout -> addWidget(button, row+1, col+1);
         }
     }
+
+    this -> initialize_window_with_student(this -> get_current_student());
+
+    // Hook the text box and button events onto the current student
+    connect(ui -> name_textbox, &QTextEdit::textChanged, this, &MainWindow::update_name);
+    connect(ui -> sid_textbox, &QTextEdit::textChanged, this, &MainWindow::update_sid);
+    connect(ui -> calculate_button, &QPushButton::clicked, this, &MainWindow::calculate);
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     delete ui;
+}
+
+void MainWindow::update_name() {
+    const QString text = this -> ui -> name_textbox -> toPlainText();
+    this -> get_current_student() -> set_name(text);
+}
+
+void MainWindow::update_sid() {
+    const QString text = this -> ui -> sid_textbox -> toPlainText();
+    qDebug() << text;
+    this -> get_current_student() -> set_sid(text);
+}
+
+// Load the current setting for a given student
+void MainWindow::initialize_window_with_student(const Student* student) {
+    qDebug() << "Initializing student";
+}
+
+void MainWindow::calculate() {
+    // Implement later
+    qDebug() << "Calculate is pressed";
 }
 

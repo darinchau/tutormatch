@@ -24,5 +24,10 @@ private:
     Ui::MainWindow *ui;
     std::vector<Student> students;
     int current_student;
+
+private slots:
+    void update_name();
+    void update_sid();
+    void calculate();
 };
 #endif // MAINWINDOW_H
