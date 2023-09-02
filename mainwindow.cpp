@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QDebug>
+#include "togglebutton.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,14 +22,17 @@ MainWindow::MainWindow(QWidget *parent)
     for (int row = 0; row < num_rows; ++row) {
         for (int col = 0; col < num_cols; ++col) {
             int button_number = row * num_cols + col;
-            QPushButton* button = new QPushButton("Button " + QString::number(button_number));
-            grid_layout ->addWidget(button, row, col);
+            const auto button_name = "Button " + QString::number(button_number);
+            ToggleButton* button = new ToggleButton(button_name);
 
-            // Optionally, connect a slot to handle button clicks
-            connect(button, &QPushButton::clicked, [=]() {
-                // Handle button click
-                qDebug() << "Button " << button_number << " clicked.";
-            });
+            // Onclick event for button
+            const auto button_event = [=](bool state_after_click) {
+                qDebug() << "Button " << button_number << " is toggled:" << state_after_click;
+            };
+
+            button -> register_onclick(button_event);
+
+            grid_layout -> addWidget(button, row, col);
         }
     }
 }

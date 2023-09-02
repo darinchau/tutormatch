@@ -39,6 +39,7 @@ else()
         add_executable(tutors
             ${PROJECT_SOURCES}
             Resources.qrc
+            togglebutton.h togglebutton.cpp
         )
     endif()
 endif()
