@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "student.h"
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -15,7 +17,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void initialize_window_with_student(const Student* student);
+    Student* get_current_student() { return &(this -> students[current_student]); }
+
 private:
     Ui::MainWindow *ui;
+    std::vector<Student> students;
+    int current_student;
 };
 #endif // MAINWINDOW_H

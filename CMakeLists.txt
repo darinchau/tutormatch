@@ -40,6 +40,7 @@ else()
             ${PROJECT_SOURCES}
 
             togglebutton.h togglebutton.cpp
+            student.h student.cpp
         )
     endif()
 endif()
