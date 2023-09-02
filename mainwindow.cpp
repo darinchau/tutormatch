@@ -46,23 +46,6 @@ const char* TIME_RANGES[NUM_TIME_IN_DAY]  = {
     "8:30pm - 9:00pm"
 };
 
-ToggleButton* create_button (const int num_rows, const int num_cols, const int row, const int col) {
-    const QString button_name = QString(WEEK[col - 1]) + QString(" ") + QString(TIME_RANGES[row - 1]);
-    ToggleButton* button = new ToggleButton(button_name);
-
-    // Change button color on click
-    button -> register_onclick([](ToggleButton* const button, bool state_after_click) {
-        if (state_after_click) {
-            button -> setStyleSheet("background-color: #3eb489; color: black;");
-        }
-        else {
-            button -> setStyleSheet("background-color: white; color: black;");
-        }
-    });
-
-    return button;
-}
-
 void add_labels(QGridLayout* const& grid_layout) {
     for (int i = 0; i < 5; i++) {
         QLabel* label = new QLabel(QString(WEEK[i]));
@@ -96,15 +79,18 @@ MainWindow::MainWindow(QWidget *parent):
     const int num_cols = NUM_DAYS_IN_WEEK;
     for (int row = 0; row < num_rows; ++row) {
         for (int col = 0; col < num_cols; ++col) {
-            ToggleButton* button = create_button(num_rows, num_cols, row+1, col+1);
+            const QString button_name = QString(WEEK[col]) + QString(" ") + QString(TIME_RANGES[row]);
+            ToggleButton* button = new ToggleButton(button_name, row, col);
 
-            // Change the current student event
+            // Change the current student event and update the UI
             button -> register_onclick([this, row, col](ToggleButton* const button, bool state_after_click) {
                 Student* student = this -> get_current_student();
                 student -> mark_timetable(state_after_click, col, row);
+                this -> initialize_window_with_student(student);
             });
 
             grid_layout -> addWidget(button, row+1, col+1);
+            this -> buttons[col][row] = button;
         }
     }
 
@@ -129,23 +115,32 @@ MainWindow::~MainWindow() {
 
 void MainWindow::update_name() {
     const QString text = this -> ui -> name_textbox -> toPlainText();
+    qDebug() << "Name textbox" << text;
     this -> get_current_student() -> set_name(text);
 }
 
 void MainWindow::update_sid() {
     const QString text = this -> ui -> sid_textbox -> toPlainText();
-    qDebug() << text;
+    qDebug() << "Student ID textbox" << text;
     this -> get_current_student() -> set_sid(text);
 }
 
 // Load the current setting for a given student
 void MainWindow::initialize_window_with_student(const Student* student) {
-    qDebug() << "Initializing student";
-}
+    qDebug() << "Initializing UI with student" << student->get_name() << " current student idx " << this->current_student_idx;
 
-void MainWindow::calculate() {
-    // Implement later
-    qDebug() << "Calculate is pressed";
+    this -> ui -> name_textbox -> setText(student->get_name());
+    this -> ui -> sid_textbox -> setText(student->get_sid());
+    this -> ui -> tutor_checkbox -> setCheckState(student->get_is_tutor() ? Qt::Checked : Qt::Unchecked);
+    this -> ui -> tutor_checkbox -> setCheckState(student->get_respect_dayoff() ? Qt::Checked : Qt::Unchecked);
+
+    for(int i = 0; i < NUM_DAYS_IN_WEEK; ++i) {
+        for (int j = 0; j < NUM_TIME_IN_DAY; ++j) {
+            ToggleButton* button = buttons[i][j];
+            button -> set_toggled(student -> is_occupied(i, j));
+            button -> update_ui();
+        }
+    }
 }
 
 void MainWindow::update_tutor(int state) {
@@ -174,4 +169,9 @@ void MainWindow::update_prev_student() {
     }
     this -> set_current_student_idx(current_idx - 1);
     this -> refresh_ui();
+}
+
+void MainWindow::calculate() {
+    // Implement later
+    qDebug() << "Calculate is pressed";
 }

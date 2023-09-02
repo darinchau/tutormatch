@@ -5,6 +5,7 @@
 #include "student.h"
 #include <vector>
 #include <stdexcept>
+#include "togglebutton.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -46,6 +47,7 @@ private:
     Ui::MainWindow *ui;
     std::vector<Student> students;
     int current_student_idx = 0;
+    ToggleButton* buttons[NUM_DAYS_IN_WEEK][NUM_TIME_IN_DAY] = {{nullptr}};
 
 private slots:
     void update_name();

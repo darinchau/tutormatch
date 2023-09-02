@@ -23,22 +23,35 @@ public:
     Student();
     void mark_timetable(bool occupied, int week, int time_slot);
     bool is_occupied(int week, int time_slot) const;
+    bool is_occupied_or_dayoff(int week, int time_slot) const;
 
-    bool get_is_tutor() const {
-        return this -> is_tutor;
+    QString get_name() const {
+        return this -> name;
     }
 
     void set_name(const QString new_name) {
         this -> name = new_name;
     }
 
+    QString get_sid() const {
+        return this -> student_id;
+    }
+
     void set_sid(const QString new_id) {
         this -> student_id = new_id;
+    }
+
+    bool get_is_tutor() const {
+        return this -> is_tutor;
     }
 
     void set_is_tutor(bool new_state) {
         qDebug() << "Setting " << this->name << "'s tutor status to " << new_state;
         this -> is_tutor = new_state;
+    }
+
+    bool get_respect_dayoff() const {
+        return this -> is_tutor;
     }
 
     void set_respect_dayoff(bool new_state) {
