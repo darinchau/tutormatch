@@ -1,11 +1,15 @@
 #include <iostream>
 #include <QDebug>
 #include <memory>
+#include <list>
+#include <functional>
 #include <QString>
 #include <QFile>
 #include <QTextStream>
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <utility>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "togglebutton.h"
@@ -171,7 +175,83 @@ void MainWindow::update_prev_student() {
     this -> refresh_ui();
 }
 
+typedef std::reference_wrapper<const Student> StudentReference;
+
+// A tutor is a student but also has a vector of students
+class Tutor {
+    // Tutor does NOT own student or any of its students
+    const StudentReference tutor_student;
+    std::vector<StudentReference> students;
+
+public:
+    int get_availability_score() const {
+        return 0;
+    }
+
+    bool operator<(const Tutor& other) const {
+        return this -> get_availability_score() < other.get_availability_score();
+    }
+
+    Tutor(StudentReference s): tutor_student{s} {
+        this -> students = std::vector<StudentReference>{};
+    }
+
+    void add_student(StudentReference s) {
+        this -> students.push_back(s);
+    }
+
+    void pop_student() {
+        this -> students.pop_back();
+    }
+};
+
+
 void MainWindow::calculate() {
-    // Implement later
     qDebug() << "Calculate is pressed";
+
+    std::list<std::reference_wrapper<const Student>> participants;
+    std::vector<Tutor> tutors;
+
+    for(const auto& s: this -> students) {
+        if (s.get_is_tutor()) {
+            tutors.push_back(Tutor(s));
+        } else {
+            participants.push_back(s);
+        }
+    }
+
+    // Greedy algorithm
+    std::make_heap(tutors.begin(), tutors.end());
+
+    // Would have to insert prepaired students and tutors here
+    while (participants.size()) {
+        std::pop_heap(tutors.begin(), tutors.end());
+        Tutor tutor = tutors.back();
+        tutors.pop_back();
+
+        auto best_it = participants.begin();
+        int best_score = 99999999;
+        auto it = participants.begin();
+
+        while (it != participants.end()) {
+            tutor.add_student(*it);
+            int new_score = tutor.get_availability_score();
+            tutor.pop_student();
+
+            if (new_score < best_score) {
+                best_score = new_score;
+                best_it = it;
+            }
+
+            ++it;
+        }
+
+        // Now we found the best student for the tutor. Append it to the list and put it back
+        StudentReference best_student = *best_it;
+        tutor.add_student(best_student);
+        tutors.push_back(tutor);
+        std::push_heap(tutors.begin(), tutors.end());
+
+        // TODO make sure every tutor has similar amount of student;
+    }
 }

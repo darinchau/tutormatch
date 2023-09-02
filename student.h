@@ -24,6 +24,7 @@ public:
     void mark_timetable(bool occupied, int week, int time_slot);
     bool is_occupied(int week, int time_slot) const;
     bool is_occupied_or_dayoff(int week, int time_slot) const;
+    int get_availability_score() const;
 
     QString get_name() const {
         return this -> name;
