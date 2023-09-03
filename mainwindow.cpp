@@ -175,16 +175,20 @@ void MainWindow::update_prev_student() {
     this -> refresh_ui();
 }
 
+// The const Student& typedef so we can put these in a vector
 typedef std::reference_wrapper<const Student> StudentReference;
 
 // A tutor is a student but also has a vector of students
 class Tutor {
-    // Tutor does NOT own student or any of its students
     const StudentReference tutor_student;
     std::vector<StudentReference> students;
 
 public:
+    // The higher this score, the more time slots the tutor and students ahve commonly available
     int get_availability_score() const {
+        // Availability score based on the number of time slots the tutor and students are available
+        // Take into account the upper limit thing
+        // zzz
         return 0;
     }
 
@@ -203,13 +207,64 @@ public:
     void pop_student() {
         this -> students.pop_back();
     }
+
+    QString get_student_id() const {
+        return this -> tutor_student.get().get_sid();
+    }
 };
+
+// A greedy DP algorithm using a priority queue
+bool backtrack(std::vector<Tutor>& tutors, std::vector<StudentReference>& participants) {
+    if(!participants.size()) {
+        return true;
+    }
+
+    std::pop_heap(tutors.begin(), tutors.end());
+    Tutor tutor = tutors.back();
+    tutors.pop_back();
+
+    // Create a copy and sort the participants because we are working with references
+    std::vector<StudentReference> parts = participants;
+
+    std::sort(parts.begin(), parts.end(), [&tutor](const StudentReference& s1, const StudentReference& s2){
+        tutor.add_student(s1);
+        int score1 = tutor.get_availability_score();
+        tutor.pop_student();
+
+        tutor.add_student(s2);
+        int score2 = tutor.get_availability_score();
+        tutor.pop_student();
+
+        return score1 > score2;
+    });
+
+    for(auto it = parts.begin(); it != parts.end(); ++it) {
+        StudentReference best_student = *it;
+        participants.erase(it);
+        tutor.add_student(best_student);
+
+        // Store a reference to the tutor's student ID to find it later
+        const QString student_id = tutor.get_student_id();
+        tutors.push_back(tutor);
+        std::push_heap(tutors.begin(), tutors.end());
+
+        bool result = backtrack(tutors, participants);
+
+        // Find back the tutor and remove the student
+        auto found_tutor = std::find_if(tutors.begin(), tutors.end(), [&student_id](const Tutor& tutor) {
+            return student_id == tutor.get_student_id();
+        });
+
+        (*found_tutor).pop_student();
+        std::make_heap(tutors.begin(), tutors.end());
+    }
+}
 
 
 void MainWindow::calculate() {
     qDebug() << "Calculate is pressed";
 
-    std::list<std::reference_wrapper<const Student>> participants;
+    std::vector<StudentReference> participants;
     std::vector<Tutor> tutors;
 
     for(const auto& s: this -> students) {
@@ -220,38 +275,10 @@ void MainWindow::calculate() {
         }
     }
 
+    // Assert all student IDs are unique
+
     // Greedy algorithm
     std::make_heap(tutors.begin(), tutors.end());
 
     // Would have to insert prepaired students and tutors here
-    while (participants.size()) {
-        std::pop_heap(tutors.begin(), tutors.end());
-        Tutor tutor = tutors.back();
-        tutors.pop_back();
-
-        auto best_it = participants.begin();
-        int best_score = 99999999;
-        auto it = participants.begin();
-
-        while (it != participants.end()) {
-            tutor.add_student(*it);
-            int new_score = tutor.get_availability_score();
-            tutor.pop_student();
-
-            if (new_score < best_score) {
-                best_score = new_score;
-                best_it = it;
-            }
-
-            ++it;
-        }
-
-        // Now we found the best student for the tutor. Append it to the list and put it back
-        StudentReference best_student = *best_it;
-        tutor.add_student(best_student);
-        tutors.push_back(tutor);
-        std::push_heap(tutors.begin(), tutors.end());
-
-        // TODO make sure every tutor has similar amount of student;
-    }
 }
