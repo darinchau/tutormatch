@@ -41,6 +41,8 @@ else()
 
             togglebutton.h togglebutton.cpp
             student.h student.cpp
+            calculate.cpp
+            calculate.h
         )
     endif()
 endif()
